@@ -1,17 +1,25 @@
-// 引入自己的promise
 const Promise = require("./myPromise");
 
 let p = new Promise((resolve, reject) => {
-    throw new Error("抛出异常了");
-  //   reject('出错了')
-  // resolve("成功了");
+  setTimeout(() => {  // exector里面执行异步代码
+    resolve("ok");
+  }, 1000);
 });
 
 p.then(
   (res) => {
-    console.log("success:" + res);
+    console.log("success:" + res); // 过2秒后输出  success: ok
   },
   (err) => {
     console.log("fail:" + err);
+  }
+);
+
+p.then(
+  (res) => {
+    console.log("resolve: " + res); // 过2秒后输出  resolve: ok
+  },
+  (err) => {
+    console.log("shibai: " + err);
   }
 );

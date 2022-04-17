@@ -13,6 +13,9 @@ class Promise {
     this.value = undefined; // 5. 成功的原因，默认undefined，为了方便在then里面取到，所以实例上放一份
     this.reason = undefined; // 5. 失败的原因，默认undefined，为了方便在then里面取到，所以实例上放一份
 
+    this.onFulfilledCallBack = []; // 存放成功回调的
+    this.onRejectedCallBack = []; // 存放失败回调的
+
     // 成功回调（注意使用箭头函数，否则theis会有问题）
     const resolve = (val) => {
       // 4. 只有padding时候才能改变状态
@@ -21,6 +24,8 @@ class Promise {
         this.status = STATUS.FULFILLED;
         // 5. 调用resoove时候，接收到成功的原因val
         this.value = val;
+        // 发布：调用成功时候，将所有成功的方法执行
+        this.onFulfilledCallBack.forEach((fn) => fn());
       }
     };
 
@@ -32,6 +37,8 @@ class Promise {
         this.status = STATUS.REJECTED;
         // 5. 调用reject时候， 接收到失败原因reason;
         this.reason = reason;
+        // 发布： 执行失败时候，将所有失败的函数执行
+        this.onRejectedCallBack.forEach((fn) => fn());
       }
     };
 
@@ -55,6 +62,17 @@ class Promise {
     // 9.若是当前promise的状态是失败则调用第二个参数onRejected
     if (this.status === STATUS.REJECTED) {
       onRejected(this.reason); // 9.将失败的原因传递出去
+    }
+    // 订阅模式：状态为padding时候，将方法缓存起来，等待发布..
+    if (this.status === STATUS.PADDING) {
+      this.onFulfilledCallBack.push(() => {
+        // todo..其他逻辑
+        onFulfilled(this.value);
+      });
+      this.onRejectedCallBack.push(() => {
+        // todo.. 其他逻辑
+        onRejected(this.reason);
+      });
     }
   }
 }
