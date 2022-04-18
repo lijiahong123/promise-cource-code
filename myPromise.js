@@ -55,25 +55,60 @@ class Promise {
 
   // 7. then是promise的实例方法，有两个参数，onFulfilled,onRejected
   then(onFulfilled, onRejected) {
-    //  8. 若是当前promise的状态是成功则调用第一个参数onFulfilled
-    if (this.status === STATUS.FULFILLED) {
-      onFulfilled(this.value); // 8. 将成功的原因传递出去
-    }
-    // 9.若是当前promise的状态是失败则调用第二个参数onRejected
-    if (this.status === STATUS.REJECTED) {
-      onRejected(this.reason); // 9.将失败的原因传递出去
-    }
-    // 订阅模式：状态为padding时候，将方法缓存起来，等待发布..
-    if (this.status === STATUS.PADDING) {
-      this.onFulfilledCallBack.push(() => {
-        // todo..其他逻辑
-        onFulfilled(this.value);
-      });
-      this.onRejectedCallBack.push(() => {
-        // todo.. 其他逻辑
-        onRejected(this.reason);
-      });
-    }
+    // then返回一个promise才能链式调用，所以，每次调用then的时候都需要有一个全新的promise
+    let promise2 = new Promise((resolve, reject) => {
+      //  8. 若是当前promise的状态是成功则调用第一个参数onFulfilled
+      if (this.status === STATUS.FULFILLED) {
+        // 用户在then里面可能抛出异常
+        try {
+          // 这里的x就是then里面return 出来的结果
+          let x = onFulfilled(this.value); // 8. 将成功的原因传递出去
+          resolve(x);
+        } catch (error) {
+          // 抛出异常就会走到下一个then的第二个参数
+          reject(error);
+        }
+      }
+
+      // 9.若是当前promise的状态是失败则调用第二个参数onRejected
+      if (this.status === STATUS.REJECTED) {
+        // 用户在 then里面可能抛出异常
+        try {
+          // 这里的x就是then里面return 出来的结果
+          let x = onRejected(this.reason); // 9.将失败的原因传递出去
+          reject(x);
+        } catch (error) {
+          // 抛出异常就会走到下一个then的第二个参数
+          reject(error);
+        }
+      }
+
+      // 订阅模式：状态为padding时候，将方法缓存起来，等待发布..
+      if (this.status === STATUS.PADDING) {
+        this.onFulfilledCallBack.push(() => {
+          // todo..其他逻辑
+          try {
+            // 这里的x就是then里面return 出来的结果
+            let x = onFulfilled(this.value);
+            resolve(x);
+          } catch (error) {
+            reject(error);
+          }
+        });
+        this.onRejectedCallBack.push(() => {
+          // todo.. 其他逻辑
+          try {
+            // 这里的x就是then里面return 出来的结果
+            let x = onRejected(this.reason);
+            reject(x);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+    });
+
+    return promise2;
   }
 }
 
