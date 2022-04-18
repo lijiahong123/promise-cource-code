@@ -5,6 +5,10 @@ const STATUS = {
   REJECTED: "REJECTED", // rejected
 };
 
+function resolvePromise(x, promise2, resolve, reject) {
+  console.log(x, promise2, resolve, reject);
+}
+
 class Promise {
   // 2. 传入一个执行器函数
   constructor(executor) {
@@ -59,55 +63,60 @@ class Promise {
     let promise2 = new Promise((resolve, reject) => {
       //  8. 若是当前promise的状态是成功则调用第一个参数onFulfilled
       if (this.status === STATUS.FULFILLED) {
-        // 用户在then里面可能抛出异常
-        try {
-          // 这里的x就是then里面return 出来的结果
-          let x = onFulfilled(this.value); // 8. 将成功的原因传递出去
-          resolve(x);
-        } catch (error) {
-          // 抛出异常就会走到下一个then的第二个参数
-          reject(error);
-        }
+        // setTimeout这里可以使用其他宏任务或微任务，目的是让里面的resolvePromise方法能拿到promise2
+        setTimeout(() => {
+          // 用户在then里面可能抛出异常
+          try {
+            // 这里的x就是then里面return 出来的结果
+            let x = onFulfilled(this.value); // 8. 将成功的原因传递出去
+            // resolve(x);
+            resolvePromise(x, promise2, resolve, reject); // 用来解析x是promise的情况
+          } catch (error) {
+            reject(error); // 抛出异常就会走到下一个then的第二个参数
+          }
+        }, 0);
       }
 
       // 9.若是当前promise的状态是失败则调用第二个参数onRejected
       if (this.status === STATUS.REJECTED) {
-        // 用户在 then里面可能抛出异常
-        try {
-          // 这里的x就是then里面return 出来的结果
-          let x = onRejected(this.reason); // 9.将失败的原因传递出去
-          reject(x);
-        } catch (error) {
-          // 抛出异常就会走到下一个then的第二个参数
-          reject(error);
-        }
+        setTimeout(() => {
+          try {
+            let x = onRejected(this.reason); // 9.将失败的原因传递出去
+            // reject(x);
+            resolvePromise(x, promise2, resolve, reject);
+          } catch (error) {
+            reject(error);
+          }
+        }, 0);
       }
 
       // 订阅模式：状态为padding时候，将方法缓存起来，等待发布..
       if (this.status === STATUS.PADDING) {
         this.onFulfilledCallBack.push(() => {
-          // todo..其他逻辑
-          try {
-            // 这里的x就是then里面return 出来的结果
-            let x = onFulfilled(this.value);
-            resolve(x);
-          } catch (error) {
-            reject(error);
-          }
+          setTimeout(() => {
+            try {
+              // 这里的x就是then里面return 出来的结果
+              let x = onFulfilled(this.value);
+              // resolve(x);
+              resolvePromise(x, promise2, resolve, reject);
+            } catch (error) {
+              reject(error);
+            }
+          }, 0);
         });
         this.onRejectedCallBack.push(() => {
-          // todo.. 其他逻辑
-          try {
-            // 这里的x就是then里面return 出来的结果
-            let x = onRejected(this.reason);
-            reject(x);
-          } catch (error) {
-            reject(error);
-          }
+          setTimeout(() => {
+            try {
+              let x = onRejected(this.reason);
+              // reject(x);
+              resolvePromise(x, promise2, resolve, reject);
+            } catch (error) {
+              reject(error);
+            }
+          }, 0);
         });
       }
     });
-
     return promise2;
   }
 }

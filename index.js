@@ -9,8 +9,9 @@ let p = new Promise((resolve, reject) => {
 
 p.then(
   (res) => {
-    // return 100; // 这里返回了100，即peomise源码里面的x就是100
-    // throw new Error('xxxxx') // 抛异常会走下一个then的第二个参数
+    return new Promise((ok, e) => {
+      ok(123456);
+    });
   },
   (err) => {
     console.log("fail:" + err);
