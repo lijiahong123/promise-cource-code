@@ -108,6 +108,11 @@ class Promise {
 
   // 7. then是promise的实例方法，有两个参数，onFulfilled,onRejected
   then(onFulfilled, onRejected) {
+	// 默认处理
+	onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : data=>data
+	onRejected = typeof onRejected === 'function' ? onRejected : err=>{ throw err } // 这里抛出异常或调用reject才会进入下一个then的第二个参数
+
+
     // then返回一个promise才能链式调用，所以，每次调用then的时候都需要有一个全新的promise
     let promise2 = new Promise((resolve, reject) => {
       //  8. 若是当前promise的状态是成功则调用第一个参数onFulfilled
