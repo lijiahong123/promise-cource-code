@@ -28,18 +28,21 @@ function resolvePromise(x, promise2, resolve, reject) {
         // 需要拿到x的状态，根据状态调用resolve和reject
         // 因为上面已经拿了一次x里面的then，为了避免出错，这里直接使用，不再次拿取，但是为了保证then里面的this指向，用call调用then
         // 调用返回的promise 用他的结果 作为下一次then的结果
-        then.call( x, function (y) {
+        then.call(
+          x,
+          function (y) {
             if (called) return;
             called = true;
             // 递归解析成功后的值 直到他是一个promise为止
             resolvePromise(y, promise2, resolve, reject);
-        },
-        function (err) {
+          },
+          function (err) {
             // then的第二个参数
             if (called) return;
             called = true;
             reject(err);
-        });
+          }
+        );
       } else {
         if (called) return;
         called = true;
@@ -108,10 +111,15 @@ class Promise {
 
   // 7. then是promise的实例方法，有两个参数，onFulfilled,onRejected
   then(onFulfilled, onRejected) {
-	// 默认处理
-	onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : data=>data
-	onRejected = typeof onRejected === 'function' ? onRejected : err=>{ throw err } // 这里抛出异常或调用reject才会进入下一个then的第二个参数
-
+    // 默认处理
+    onFulfilled =
+      typeof onFulfilled === "function" ? onFulfilled : (data) => data;
+    onRejected =
+      typeof onRejected === "function"
+        ? onRejected
+        : (err) => {
+            throw err;
+          }; // 这里抛出异常或调用reject才会进入下一个then的第二个参数
 
     // then返回一个promise才能链式调用，所以，每次调用then的时候都需要有一个全新的promise
     let promise2 = new Promise((resolve, reject) => {
@@ -174,5 +182,15 @@ class Promise {
     return promise2;
   }
 }
+
+// 测试时会调用此方法 
+Promise.defer = Promise.deferred = function () {
+  let dfd = {};
+  dfd.promise = new Promise((resolve, reject) => {
+    dfd.resolve = resolve;
+    dfd.reject = reject;
+  });
+  return dfd;
+};
 
 module.exports = Promise;
