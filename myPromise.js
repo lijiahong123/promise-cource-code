@@ -5,8 +5,57 @@ const STATUS = {
   REJECTED: "REJECTED", // rejected
 };
 
+/**
+ *
+ * @param {Object|Function} x 可能是对象或Promise
+ * @param {Promise} promise2 Promise对象
+ * @param {Function} resolve promise2的执行器内，成功时候执行的回调
+ * @param {Function} reject promise2的执行器内，失败时候执行的回调
+ */
 function resolvePromise(x, promise2, resolve, reject) {
-  console.log(x, promise2, resolve, reject);
+  if (x === promise2) {
+    // 防止then里面return了和上一个then里面相同引用的promise,导致递归引用
+    throw TypeError("不允许递归引用同一个promise对象");
+  }
+
+  // x可能是一个promise
+  if ((typeof x === "object" && x !== null) || typeof x === "function") {
+    let called; // 调用锁,防止多次改变状态
+    try {
+      let then = x.then;
+      // 是promise
+      if (typeof then === "function") {
+        // 需要拿到x的状态，根据状态调用resolve和reject
+        // 因为上面已经拿了一次x里面的then，为了避免出错，这里直接使用，不再次拿取，但是为了保证then里面的this指向，用call调用then
+        // 调用返回的promise 用他的结果 作为下一次then的结果
+        then.call( x, function (y) {
+            if (called) return;
+            called = true;
+            // 递归解析成功后的值 直到他是一个promise为止
+            resolvePromise(y, promise2, resolve, reject);
+        },
+        function (err) {
+            // then的第二个参数
+            if (called) return;
+            called = true;
+            reject(err);
+        });
+      } else {
+        if (called) return;
+        called = true;
+        // x是普通对象,这里为什么不用判断状态，是因为resolvePromise就是fulfilled下调用的，因此直接resolve即可
+        resolve(x);
+      }
+    } catch (error) {
+      if (called) return;
+      called = true;
+      // 取then时候出错，进入到下一个then的第二个参数
+      reject(error);
+    }
+  } else {
+    // x就是一个普通值,直接resolve
+    resolve(x);
+  }
 }
 
 class Promise {

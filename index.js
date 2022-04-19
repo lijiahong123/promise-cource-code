@@ -6,11 +6,10 @@ let p = new Promise((resolve, reject) => {
     resolve("ok");
   }, 1000);
 });
-
 p.then(
   (res) => {
     return new Promise((ok, e) => {
-      ok(123456);
+      e(123456);
     });
   },
   (err) => {
