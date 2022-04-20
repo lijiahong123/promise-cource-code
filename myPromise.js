@@ -74,6 +74,13 @@ class Promise {
 
     // 成功回调（注意使用箭头函数，否则theis会有问题）
     const resolve = (val) => {
+      //  val有可能是一个promise,这里需要注意处理
+      // 若val是一个promise,此时需要调用它的then方法，递归解析
+      if(val instanceof Promise) {
+        return val.then(resolve,reject) // then是微任务，因此这里可以拿到reject方法
+      }
+
+
       // 4. 只有padding时候才能改变状态
       if (this.status === STATUS.PADDING) {
         // 4. 调用resolve时候，将状态置位成功fulfilled
@@ -181,9 +188,16 @@ class Promise {
     });
     return promise2;
   }
+
+  static resolve(value) {
+    // Promise.resolve会返回一个全新的promise,所以才能then
+    return new Promise((resolve, rejevt) => {
+      resolve(value); 
+    });
+  }
 }
 
-// 测试时会调用此方法 
+// 测试时会调用此方法
 Promise.defer = Promise.deferred = function () {
   let dfd = {};
   dfd.promise = new Promise((resolve, reject) => {

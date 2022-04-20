@@ -25,15 +25,24 @@ const Promise = require("./myPromise");
 // );
 
 let p2 = new Promise((resolve, reject) => {
-  reject("okk");
+  setTimeout(()=>{
+    resolve("okk");
+  },1000)
+  // throw Error('xxxxx')
 });
-p2.then()
-  .then()
-  .then()
-  .then(
-    (data) => {
-      console.log("data:" + data); // data:okk
-    },
-    (err) => {
-      console.log("err:" + err);
-  });
+// p2.then()
+//   .then()
+//   .then()
+//   .then(
+//     (data) => {
+//       console.log("data:" + data); // data:okk
+//     },
+//     (err) => {
+//       console.log("err:" + err);
+//   });
+
+Promise.resolve(p2).then(r=>{
+  console.log(r);
+},err=>{
+  console.log("err："+err);
+})
