@@ -199,6 +199,12 @@ class Promise {
       resolve(value);
     });
   }
+
+  static reject(reason) { 
+    return new Promise((resolve, reject) => {
+      reject(reason); // 
+    });
+  }
 }
 
 // 测试时会调用此方法
