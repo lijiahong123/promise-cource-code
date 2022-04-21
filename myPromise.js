@@ -76,10 +76,9 @@ class Promise {
     const resolve = (val) => {
       //  val有可能是一个promise,这里需要注意处理
       // 若val是一个promise,此时需要调用它的then方法，递归解析
-      if(val instanceof Promise) {
-        return val.then(resolve,reject) // then是微任务，因此这里可以拿到reject方法
+      if (val instanceof Promise) {
+        return val.then(resolve, reject); // then是微任务，因此这里可以拿到reject方法
       }
-
 
       // 4. 只有padding时候才能改变状态
       if (this.status === STATUS.PADDING) {
@@ -189,10 +188,15 @@ class Promise {
     return promise2;
   }
 
+  // catch接收一个失败的回调
+  catch(err) {
+    return this.then(null, err); // 只有失败，没有成功
+  }
+
   static resolve(value) {
     // Promise.resolve会返回一个全新的promise,所以才能then
     return new Promise((resolve, rejevt) => {
-      resolve(value); 
+      resolve(value);
     });
   }
 }
