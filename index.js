@@ -24,12 +24,12 @@ const Promise = require("./myPromise");
 //   }
 // );
 
-let p2 = new Promise((resolve, reject) => {
-  setTimeout(()=>{
-    resolve("okk");
-  },1000)
-  // throw Error('xxxxx')
-});
+// let p2 = new Promise((resolve, reject) => {
+//   setTimeout(()=>{
+//     resolve("okk");
+//   },1000)
+//   // throw Error('xxxxx')
+// });
 // p2.then()
 //   .then()
 //   .then()
@@ -41,8 +41,14 @@ let p2 = new Promise((resolve, reject) => {
 //       console.log("err:" + err);
 //   });
 
-Promise.resolve(p2).then(r=>{
-  console.log(r);
-},err=>{
-  console.log("err："+err);
+// Promise.resolve(p2).then(r=>{
+//   console.log(r);
+// },err=>{
+//   console.log("err："+err);
+// })
+
+Promise.all('1234').then(res=>{
+  console.log(res);
+}).catch(err=>{
+  console.log(err);
 })

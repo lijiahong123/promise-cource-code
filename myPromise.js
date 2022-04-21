@@ -200,9 +200,45 @@ class Promise {
     });
   }
 
-  static reject(reason) { 
+  static reject(reason) {
     return new Promise((resolve, reject) => {
-      reject(reason); // 
+      reject(reason); //
+    });
+  }
+
+  // Promise.all接受一个可迭代对象作为参数
+  static all(promises) {
+    return new Promise((resolve, reject) => {
+      // 判断promises是否为可迭代对象
+      if (!isIterable(promises)) {
+        throw TypeError(
+          `${promises} is not iterable (cannot read property Symbol(Symbol.iterator))`
+        );
+      }
+      let result = []; // 最终结果
+      let num = 0;
+      //处理数据
+      function processData(i, data) {
+        result[i] = data;
+        // 用计数的方式判断全部都成功
+        if (++num === promises.length) {
+          resolve(result);
+        }
+      }
+
+      // 并发请求
+      for (let i = 0; i < promises.length; i++) {
+        const item = promises[i];
+        // 判断item是否为promise
+        if (isPromise(item)) {
+          item.then((data) => {
+            processData(i, data); // 普通值
+          }, reject);
+        } else {
+          // 不是promise
+          processData(i, item); // 普通值
+        }
+      }
     });
   }
 }
@@ -218,3 +254,18 @@ Promise.defer = Promise.deferred = function () {
 };
 
 module.exports = Promise;
+
+// 判断val是否为可迭代对象
+function isIterable(val) {
+  return val !== null && typeof val[Symbol.iterator] === "function";
+}
+
+// 如果一个变量是 Object, 有 then 和 catch 方法, 就认为是 Promise
+function isPromise(val) {
+  return (
+    val !== null &&
+    typeof val === "object" &&
+    typeof val.then === "function" &&
+    typeof val.catch === "function"
+  );
+}
