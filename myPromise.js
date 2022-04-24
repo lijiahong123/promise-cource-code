@@ -241,6 +241,46 @@ class Promise {
       }
     });
   }
+
+  static allSettled(promises) {
+    return new Promise((resolve, reject) => {
+      // 判断promises是否是一个可迭代对象
+      if (!isIterable(promises)) {
+        throw TypeError(
+          `${promises} is not iterable (cannot read property Symbol(Symbol.iterator))`
+        );
+      }
+      let result = []; // 结果集合
+      let num = 0;
+
+      function processData(i, data, status) {
+        if (status === "fulfilled") {
+          result[i] = { status, value: data };
+        } else {
+          result[i] = { status, reason: data };
+        }
+        if (++num === result.length) {
+          resolve(result);
+        }
+      }
+
+      for (let i = 0; i < promises.length; i++) {
+        const item = promises[i];
+        if (isPromise(item)) {
+          item.then(
+            (res) => {
+              processData(i, res, "fulfilled");
+            },
+            (err) => {
+              processData(i, err, "rejected");
+            }
+          );
+        } else {
+          processData(i, item, "fulfilled");
+        }
+      }
+    });
+  }
 }
 
 // 测试时会调用此方法

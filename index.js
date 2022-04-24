@@ -1,4 +1,4 @@
-const Promise = require("./myPromise");
+// const Promise = require("./myPromise");
 
 // let p = new Promise((resolve, reject) => {
 //   setTimeout(() => {
@@ -46,9 +46,10 @@ const Promise = require("./myPromise");
 // },err=>{
 //   console.log("err："+err);
 // })
-
-Promise.all('1234').then(res=>{
-  console.log(res);
-}).catch(err=>{
-  console.log(err);
-})
+Promise.allSettled("1234")
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
